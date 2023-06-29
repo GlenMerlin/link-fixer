@@ -70,7 +70,7 @@ interface FixedLink {
 const r = String.raw;
 const linkPattern = [
     r`https://(www\.)?twitter\.com/([a-zA-Z0-9_]{1,15}/status/[0-9]+)`, // Captures 1 and 2
-    r`https://(www\.)?instagram\.com/((?:p|reel)/[a-zA-Z0-9_]+)`, // Captures 3 and 4
+    r`https://(www\.)?instagram\.com/((?:p|reel)/[a-zA-Z0-9_\-]+)`, // Captures 3 and 4
     r`https://(www\.)?tiktok\.com/(@[a-zA-Z0-9_.]*[a-zA-Z0-9_]/video/[0-9]+)`, // Captures 5 and 6
     r`https://(www\.)?tiktok\.com/(t/[a-zA-Z0-9]{9})`, // Captures 7 and 8
 ].join('|');
