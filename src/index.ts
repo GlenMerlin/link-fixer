@@ -18,27 +18,39 @@ client.on('messageCreate', message => {
     if (message.author.bot) return;
     const fixedLinks = fixLinks(message.content);
     if (fixedLinks.length > 0) {
+        console.log('Replying');
         message.reply(fixedLinks.join('\n'));
     }
 });
 
 client.login(token);
 
+const twitterPattern = `https://twitter\.com/([a-zA-Z0-9_]{1,15}/status/[0-9]+)`;       // Capture 1
+const instagramPattern = `https://(?:www\.)?instagram\.com/((?:p|reel)/[a-zA-Z0-9_]+)`; // Capture 2
+const tiktokPattern = `https://(?:www\.)tiktok\.com/(t/[a-zA-Z0-9]{9})`;                // Capture 3
+const linkPattern = [twitterPattern, instagramPattern, tiktokPattern].join('|').replace(`/`, `\/`);
+const linkRe = new RegExp(linkPattern, 'gi');
+
 function fixLinks(message: string): string[] {
-    const matches = [...message.matchAll(/https:\/\/twitter\.com\/([a-zA-Z0-9_]{1,15}\/status\/[0-9]+)|https:\/\/(?:www\.)?instagram\.com\/((?:p|reel)\/[a-zA-Z0-9_]+)|https:\/\/(?:www\.)tiktok\.com\/(t\/[a-zA-Z0-9]{9})/gi)];
-    const links = [];
+    const matches = [...message.matchAll(linkRe)];
+    const fixedLinks = [];
     if (matches.length > 0) {
         for (const match of matches) {
-            if (match[1]) {
-                links.push(`https://fxtwitter.com/${match[1]}`);
+            const link = match[0];
+            let fixed;
+            if (match[1] != null) {
+                fixed = `https://fxtwitter.com/${match[1]}`;
+            } else if (match[2] != null) {
+                fixed = `https://www.ddinstagram.com/${match[2]}`;
+            } else if (match[3] != null) {
+                fixed = `https://www.vxtiktok.com/${match[3]}`;
+            } else {
+                console.error(`No pattern matched! ${JSON.stringify(message)}`);
+                continue;
             }
-            if (match[2]) {
-                links.push(`https://www.ddinstagram.com/${match[2]}`);
-            }
-            if (match[3]) {
-                links.push(`https://www.vxtiktok.com/${match[3]}`);
-            }
+            console.log(`Replaced ${link} with ${fixed}`);
+            fixedLinks.push(fixed);
         }
     }
-    return links;
+    return fixedLinks;
 }
