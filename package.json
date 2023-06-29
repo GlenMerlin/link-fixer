@@ -1,0 +1,26 @@
+{
+  "name": "link-fixer",
+  "version": "1.0.0",
+  "description": "fixes links",
+  "main": "./lib/index.js",
+  "author": {
+    "name": "GlenMerlin"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "discord.js": "^14.11.0",
+    "nodemon": "^2.0.22",
+    "typescript": "^5.1.6"
+  },
+  "files": [
+    "./bin/*",
+    "./lib/*"
+  ],
+  "typings": "./lib/index.d.ts",
+  "scripts": {
+    "dev": "nodemon build/index.js",
+    "build": "tsc",
+    "lint": "tslint -c tslint.json src/**/*.ts",
+    "prepublish": "npm run build"
+  }
+}
