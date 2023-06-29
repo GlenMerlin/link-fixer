@@ -18,9 +18,7 @@ client.once("ready", ()=> {
 
 client.on("messageCreate", (message:any)=> {
     if (message.author.bot) return;
-    console.log("yep!"); // * DEBUG
-    console.log(message.content); // * DEBUG
-    const matches = [...message.content.matchAll(/https:\/\/twitter\.com\/([a-zA-Z0-9_]{1,15}\/status\/[0-9]+)|https:\/\/(?:www\.)?instagram\.com\/((?:p|reel)\/[a-zA-Z0-9_]+)/gi)];
+    const matches = [...message.content.matchAll(/https:\/\/twitter\.com\/([a-zA-Z0-9_]{1,15}\/status\/[0-9]+)|https:\/\/(?:www\.)?instagram\.com\/((?:p|reel)\/[a-zA-Z0-9_]+)|https:\/\/(?:www\.)tiktok\.com\/(t\/[a-zA-Z0-9]{9})/gi)];
     const links = [];
     if (matches.length > 0) {
         for (const match of matches) {
@@ -29,6 +27,9 @@ client.on("messageCreate", (message:any)=> {
             }
             if (match[2]) {
                 links.push(`https://www.ddinstagram.com/${match[2]}`);
+            }
+            if (match[3]) {
+                links.push(`https://www.vxtiktok.com/${match[3]}`);
             }
         }
     }
