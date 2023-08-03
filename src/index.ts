@@ -1,4 +1,4 @@
-import { Client, GatewayIntentBits, Message } from 'discord.js';
+import { Client, GatewayIntentBits, Events, Message } from 'discord.js';
 import * as https from 'https';
 
 const { token } = require('../.config.json');
@@ -9,11 +9,21 @@ const client = new Client({
         GatewayIntentBits.MessageContent,
     ],
 });
+
 client.login(token);
 
 client.once('ready', client => {
     console.log('Started up successfully');
     client.user.setActivity('Fixing all the links!');
+});
+
+client.on(Events.InteractionCreate, async (interaction: any) => {
+    if (interaction.commandName == "settings"){
+        settings(interaction);
+    }   
+    if (interaction.commandName == "reset"){
+        reset(interaction);
+    }
 });
 
 client.on('messageCreate', message => {
@@ -48,12 +58,13 @@ client.on('messageCreate', message => {
     }
 });
 
-function reply(message: Message<boolean>, links: FixedLink[]) {
+async function reply(message: Message<boolean>, links: FixedLink[]) {
     console.log('Replacing:');
     for (const link of links) {
         console.log(`- ${link.origin} => ${link.replace}`);
     }
     const reply = links.map(link => link.replace).join('\n');
+    await message.suppressEmbeds(true);
     message.reply(reply);
 }
 
@@ -130,3 +141,12 @@ function resolveTikTokShortLinks(urls: string[]): Promise<{ [origin: string]: st
         }, {})
     );
 }
+
+function settings(interaction: any) {
+    interaction.reply("you used the settings command!");
+}
+
+function reset(interaction: any) {
+    interaction.reply("Reset your settings!");
+}
+
