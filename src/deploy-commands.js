@@ -1,8 +1,7 @@
-const { SlashCommandBuilder, PermissionFlagBits } = require('@discordjs/builders');
+const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
 const { REST } = require('@discordjs/rest');
 const { Routes } = require('discord-api-types/v9');
 const { clientID, token } = require('../.config.json');
-const { PermissionFlagsBits } = require('discord.js');
 
 const commands = [
     new SlashCommandBuilder()
@@ -23,7 +22,7 @@ const commands = [
     new SlashCommandBuilder()
         .setName('reset')
         .setDescription('Resets all settings for your server back to default')
-        .setDefaultMemberPermissions(PermissionFlagBits.Administrator)
+        .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
 ]
     .map(command => command.toJSON());
 
