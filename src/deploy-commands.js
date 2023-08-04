@@ -2,6 +2,7 @@ const { SlashCommandBuilder } = require('@discordjs/builders');
 const { REST } = require('@discordjs/rest');
 const { Routes } = require('discord-api-types/v9');
 const { clientID, token } = require('../.config.json');
+const { PermissionFlagsBits } = require('discord.js');
 
 const commands = [
     new SlashCommandBuilder()
@@ -16,11 +17,13 @@ const commands = [
             option.setName('delete')
                 .setDescription('delete the original message?')
                 .setRequired(true)
-        ),
+        )
+        .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
 
     new SlashCommandBuilder()
         .setName('reset')
         .setDescription('Resets all settings for your server back to default')
+        .setDefaultMemberPermissions(PermissionFlagBits.Administrator)
 ]
     .map(command => command.toJSON());
 

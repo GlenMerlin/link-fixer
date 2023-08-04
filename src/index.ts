@@ -19,10 +19,16 @@ client.once('ready', client => {
     client.user.setActivity('Fixing all the links!');
 });
 
-// TODO: create a db entry with default settings upon joining a server
+client.on(Events.GuildCreate, guild => {
+    const existCheck = db.prepare(`SELECT * FROM config WHERE guild_id = ?`)
+    const data = existCheck.get(guild.id)
+    if (!data) {
+        const insert = db.prepare(`INSERT INTO config (guild_id, embed, delMsg) VALUES(?, ?, ?)`);
+        insert.run(guild.id, 1, 0);
+    }
+})
 
 client.on(Events.InteractionCreate, async (interaction: any) => {
-    // TODO: Check for Admin Permissions in the server before allowing these commands to be run
     if (interaction.commandName == "settings"){
         settings(interaction);
     }   
@@ -69,8 +75,15 @@ async function reply(message: Message<boolean>, links: FixedLink[]) {
         console.log(`- ${link.origin} => ${link.replace}`);
     }
     const reply = links.map(link => link.replace).join('\n');
-    await message.suppressEmbeds(true);
-    message.reply(reply);
+    const settings = await getSettings(message);
+    if (settings.embed){
+        await message.suppressEmbeds(true)
+        message.reply(reply);
+    }
+    if (settings.delMsg){
+        await message.reply(reply);
+        await message.delete();
+    }
 }
 
 type LinkKind = 'twitter' | 'instagram' | 'tiktok' | 'tiktokShortened';
@@ -147,14 +160,12 @@ function resolveTikTokShortLinks(urls: string[]): Promise<{ [origin: string]: st
     );
 }
 
-async function settings(interaction: any) {
-    var embed = Number(interaction.options._hoistedOptions[0].value);
-    var delMsg = Number(interaction.options._hoistedOptions[1].value);
-    console.log(embed);
-    console.log(delMsg);
+const settings = async <T extends { reply(arg0: string): unknown; guildId: string, options: { _hoistedOptions: { value: unknown }[] } }>(interaction: T) => {
+    const embed = Number(interaction.options._hoistedOptions[0].value);
+    const delMsg = Number(interaction.options._hoistedOptions[1].value);
 
-    const existCheck = db.prepare(`SELECT * FROM config WHERE guild_id=?`);
-    var data = await existCheck.get(interaction.guildId)
+    const existCheck = db.prepare(`SELECT * FROM config WHERE guild_id = ?`);
+    let data = await existCheck.get(interaction.guildId)
 
     if (data){
         const update = db.prepare(`UPDATE config SET embed = ?, delMsg = ? WHERE guild_id = ?`)
@@ -165,14 +176,13 @@ async function settings(interaction: any) {
         insert.run(interaction.guildId, embed, delMsg);
     }
     data = await existCheck.get(interaction.guildId);
-    console.log(data);
     interaction.reply(`Your settings have been set!\n- Embed Removal: ${Boolean(data.embed)}\n- Original Message Deletion: ${Boolean(data.delMsg)}`);
 }
 
-async function reset(interaction: any) {
-    const existCheck = db.prepare(`SELECT * FROM config WHERE guild_id=?`);
+const reset = async <T extends { reply(arg0: string): unknown; guildId: string }>(interaction: T) => {
+    const existCheck = db.prepare(`SELECT * FROM config WHERE guild_id= ?`);
     const data = await existCheck.get(interaction.guildId)
-    if (data){
+    if (data) {
         const update = db.prepare(`UPDATE config SET embed = 1, delMsg = 0 WHERE guild_id = ?`);
         update.run(interaction.guildId)
         interaction.reply(`Your settings have been reset!\n- Embed Removal: True\n- Original Message Deletion: False`);
@@ -180,8 +190,10 @@ async function reset(interaction: any) {
     else {
         interaction.reply(`You don't seem to have any settings set. This is a problem. Please contact @glenmerlin`)
     }
-    
-}
+};
 
-function getSettings() {
+async function getSettings(message: Message<boolean>) {
+    const query = db.prepare(`SELECT * FROM config WHERE guild_id = ?`);
+    const data = await query.get(message.guildId);
+    return data;
 }
