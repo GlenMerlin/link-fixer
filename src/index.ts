@@ -161,8 +161,7 @@ function resolveTikTokShortLinks(urls: string[]): Promise<{ [origin: string]: st
 }
 
 const settings = async <T extends { reply(arg0: string): unknown; guildId: string, options: { _hoistedOptions: { value: unknown }[] } }>(interaction: T) => {
-    const embed = Number(interaction.options._hoistedOptions[0].value);
-    const delMsg = Number(interaction.options._hoistedOptions[1].value);
+    const embed = interaction.options._hoistedOptions[0].value ? 1:0, delMsg = interaction.options._hoistedOptions[1].value ? 1:0;
 
     const existCheck = db.prepare(`SELECT * FROM config WHERE guild_id = ?`);
     let data = await existCheck.get(interaction.guildId)
