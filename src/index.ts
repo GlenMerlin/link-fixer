@@ -1,5 +1,6 @@
 import { Client, GatewayIntentBits, Events, Message } from 'discord.js';
 import * as https from 'https';
+const Database = require('better-sqlite3');
 
 const { token } = require('../.config.json');
 const client = new Client({
@@ -9,6 +10,7 @@ const client = new Client({
         GatewayIntentBits.MessageContent,
     ],
 });
+const db = new Database('db.sqlite');
 
 client.login(token);
 
@@ -17,7 +19,10 @@ client.once('ready', client => {
     client.user.setActivity('Fixing all the links!');
 });
 
+// TODO: create a db entry with default settings upon joining a server
+
 client.on(Events.InteractionCreate, async (interaction: any) => {
+    // TODO: Check for Admin Permissions in the server before allowing these commands to be run
     if (interaction.commandName == "settings"){
         settings(interaction);
     }   
@@ -142,11 +147,41 @@ function resolveTikTokShortLinks(urls: string[]): Promise<{ [origin: string]: st
     );
 }
 
-function settings(interaction: any) {
-    interaction.reply("you used the settings command!");
+async function settings(interaction: any) {
+    var embed = Number(interaction.options._hoistedOptions[0].value);
+    var delMsg = Number(interaction.options._hoistedOptions[1].value);
+    console.log(embed);
+    console.log(delMsg);
+
+    const existCheck = db.prepare(`SELECT * FROM config WHERE guild_id=?`);
+    var data = await existCheck.get(interaction.guildId)
+
+    if (data){
+        const update = db.prepare(`UPDATE config SET embed = ?, delMsg = ? WHERE guild_id = ?`)
+        update.run(embed, delMsg, interaction.guildId)
+    }
+    else {
+        const insert = db.prepare(`INSERT INTO config (guild_id, embed, delMsg) VALUES(?, ?, ?)`);
+        insert.run(interaction.guildId, embed, delMsg);
+    }
+    data = await existCheck.get(interaction.guildId);
+    console.log(data);
+    interaction.reply(`Your settings have been set!\n- Embed Removal: ${Boolean(data.embed)}\n- Original Message Deletion: ${Boolean(data.delMsg)}`);
 }
 
-function reset(interaction: any) {
-    interaction.reply("Reset your settings!");
+async function reset(interaction: any) {
+    const existCheck = db.prepare(`SELECT * FROM config WHERE guild_id=?`);
+    const data = await existCheck.get(interaction.guildId)
+    if (data){
+        const update = db.prepare(`UPDATE config SET embed = 1, delMsg = 0 WHERE guild_id = ?`);
+        update.run(interaction.guildId)
+        interaction.reply(`Your settings have been reset!\n- Embed Removal: True\n- Original Message Deletion: False`);
+    }
+    else {
+        interaction.reply(`You don't seem to have any settings set. This is a problem. Please contact @glenmerlin`)
+    }
+    
 }
 
+function getSettings() {
+}
