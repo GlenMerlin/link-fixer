@@ -10,7 +10,7 @@ const client = new Client({
         GatewayIntentBits.MessageContent,
     ],
 });
-const db = new Database('db.sqlite');
+const db = new Database('/home/glenmerlin/link-fixer/db.sqlite');
 
 client.login(token);
 
