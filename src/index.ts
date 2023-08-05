@@ -78,7 +78,7 @@ async function reply(message: Message<boolean>, links: FixedLink[]) {
     const settings = await getSettings(message);
     if (settings.embed){
         await message.suppressEmbeds(true)
-        message.reply(reply);
+        await message.reply(reply);
     }
     if (settings.delMsg){
         await message.reply(reply);
