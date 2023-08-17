@@ -86,7 +86,7 @@ async function reply(message: Message<boolean>, links: FixedLink[]) {
     }
 }
 
-type LinkKind = 'twitter' | 'instagram' | 'tiktok' | 'tiktokShortened';
+type LinkKind = 'twitter' | 'instagram' | 'tiktok' | 'tiktokShortened' | 'x.com';
 interface FixedLink {
     kind: LinkKind;
     origin: string;
@@ -102,6 +102,7 @@ const linkPattern = [
     r`https://(www\.)?instagram\.com/((?:p|reel)/[a-zA-Z0-9_\-]+)`, // Captures 3 and 4
     r`https://(www\.)?tiktok\.com/(@[a-zA-Z0-9_.]*[a-zA-Z0-9_]/video/[0-9]+)`, // Captures 5 and 6
     r`https://(www\.)?tiktok\.com/(t/[a-zA-Z0-9]{9})`, // Captures 7 and 8
+    r`https://(www\.)?x\.com/([a-zA-Z0-9_]{1,15}/status/[0-9]+)`, // Captures 9 and 10
 ].join('|');
 const linkRe = new RegExp(linkPattern, 'gi');
 
@@ -125,6 +126,9 @@ function fixLinks(message: string): FixedLink[] {
             } else if (match[8] != null) {
                 kind = 'tiktokShortened';
                 replace = `https://${match[7] || ''}vxtiktok.com/${match[8]}`;
+            } else if (match[10] != null){
+                kind = 'x.com';
+                replace = `https://${match[9] || ''}fxtwitter.com/${match[10]}`;
             } else {
                 console.error(`No pattern matched! ${JSON.stringify(message)}`);
                 continue;
