@@ -1,7 +1,9 @@
-const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
-const { REST } = require('@discordjs/rest');
-const { Routes } = require('discord-api-types/v9');
-const { clientID, token } = require('../.config.json');
+#!/usr/bin/env ts-node
+
+import { SlashCommandBuilder, PermissionFlagsBits } from 'discord.js';
+import { REST } from '@discordjs/rest';
+import { Routes } from 'discord-api-types/v9';
+import { clientID, token } from './config';
 
 const commands = [
     new SlashCommandBuilder()
