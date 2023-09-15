@@ -2,7 +2,7 @@
   "name": "link-fixer",
   "version": "1.0.0",
   "description": "fixes links",
-  "main": "./lib/index.js",
+  "main": "./build/index.js",
   "author": {
     "name": "GlenMerlin"
   },
@@ -10,15 +10,17 @@
   "dependencies": {
     "@discordjs/builders": "^1.6.4",
     "@discordjs/rest": "^2.0.0",
+    "better-sqlite3": "8.5.0",
     "discord-api-types": "^0.36.0",
     "discord-command-parser": "^1.5.3",
     "discord.js": "^14.11.0",
-    "better-sqlite3": "8.5.0",
+    "superstruct": "1.0.3",
     "typescript": "^5.1.6"
   },
   "files": [
     "./bin/*",
-    "./lib/*"
+    "./lib/*",
+    "./build/*"
   ],
   "typings": "./lib/index.d.ts",
   "scripts": {
@@ -28,7 +30,7 @@
     "prepublish": "npm run build"
   },
   "devDependencies": {
-    "@types/sqlite3": "^3.1.8",
+    "@types/better-sqlite3": "7.6.4",
     "nodemon": "^3.0.1",
     "ts-node": "^10.9.1"
   }

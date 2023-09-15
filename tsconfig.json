@@ -15,6 +15,9 @@
 		"removeComments": true,
 		"esModuleInterop": true,
 		"allowSyntheticDefaultImports": true,
+		"useUnknownInCatchVariables": true,
+		"noUncheckedIndexedAccess": true,
+		"resolveJsonModule": true
 	},
 	"typeRoots": [
 		"./node_modules/@types",

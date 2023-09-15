@@ -6,8 +6,8 @@ embed- and privacy-friendly proxies.
 # SQLite Schema
 ```sql
 CREATE TABLE config (
-        guild_id VARCHAR PRIMARY KEY,
-        embed BOOLEAN NOT NULL,
-        delMsg BOOLEAN NOT NULL
-    );
+    guild_id VARCHAR PRIMARY KEY,
+    embed BOOLEAN NOT NULL,
+    delMsg BOOLEAN NOT NULL
+);
 ```
