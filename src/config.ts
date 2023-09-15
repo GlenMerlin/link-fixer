@@ -9,7 +9,7 @@ const configSchema = type({
   token: nonempty(string())
 });
 
-// Fail early if config is not expected shape
+// Fail early if config is not the expected shape
 assert(config, configSchema);
 
 export const clientID: string = config.clientID;
