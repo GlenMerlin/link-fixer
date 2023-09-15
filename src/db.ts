@@ -1,18 +1,20 @@
 import type { Guild, Message } from 'discord.js';
 import type { NumberBool } from './util';
 import { boolToNum } from './util';
-import { assert, literal, nonempty, string, type, union } from 'superstruct';
+import { boolean, coerce, create, literal, nonempty, string, type, union } from 'superstruct';
 import Database from 'better-sqlite3';
 
+// `0 | 1`
 const numberBool = union([literal(0), literal(1)]);
+
+// Should turn `boolean` values into `0 | 1`
+const numberOrBool = coerce(numberBool, boolean(), Boolean);
 
 const rawGuildConfigSchema = type({
   guild_id: nonempty(string()),
-  embed: numberBool,
-  delMsg: numberBool
+  embed: numberOrBool,
+  delMsg: numberOrBool
 });
-
-type RawGuildConfig = typeof rawGuildConfigSchema.TYPE;
 
 interface GuildConfig {
   guildId: string;
@@ -20,7 +22,7 @@ interface GuildConfig {
   delMsg: boolean;
 }
 
-function configFromRaw(raw: RawGuildConfig): GuildConfig {
+function configFromRaw(raw: typeof rawGuildConfigSchema.TYPE): GuildConfig {
   return {
     guildId: raw.guild_id,
     embed: Boolean(raw.embed),
@@ -49,10 +51,11 @@ export function getConfigForGuild(guild: Guild): GuildConfig | null {
   const data = query.get(guild.id);
   if (!data) return null;
 
-  // If for some reason we got a corrupted database file, we should fail early
-  assert(data, rawGuildConfigSchema);
+  // Try to construct a config from the input data.
+  // If the database is corrupted somehow, fail early.
+  const configData = create(data, rawGuildConfigSchema);
 
-  return configFromRaw(data);
+  return configFromRaw(configData);
 }
 
 export function getSettings(message: Message<true>): GuildConfig | null {
