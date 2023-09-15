@@ -1,6 +1,6 @@
 import type { ChatInputCommandInteraction, Message } from 'discord.js';
 import { Client, GatewayIntentBits, Events } from 'discord.js';
-import * as https from 'https';
+import { get as httpsGet } from 'node:https';
 import {
     createConfigForGuild,
     getConfigForGuild,
@@ -157,7 +157,7 @@ interface ResolvedLink {
 
 async function resolveTikTokShortLink(url: string): Promise<ResolvedLink> {
     return await new Promise((resolve, reject) => {
-        https.get(url, resp => {
+        httpsGet(url, resp => {
             resolve({ origin: url, redirect: resp.headers.location });
         }).on('error', err => {
             console.error(`Error: GET ${url}: `, err);
