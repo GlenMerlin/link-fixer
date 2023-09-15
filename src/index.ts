@@ -32,43 +32,44 @@ client.on(Events.GuildCreate, guild => {
     }
 })
 
-client.on(Events.InteractionCreate, async (interaction: any) => {
-    if (interaction.commandName == "settings"){
-        settings(interaction);
+client.on(Events.InteractionCreate, async interaction => {
+    if (!interaction.isChatInputCommand()) return;
+
+    if (interaction.commandName === "settings"){
+        await settings(interaction);
     }   
-    if (interaction.commandName == "reset"){
-        reset(interaction);
+    if (interaction.commandName === "reset"){
+        await reset(interaction);
     }
 });
 
-client.on('messageCreate', message => {
+client.on('messageCreate', async message => {
     if (message.author.bot) return;
     const fixedLinks = fixLinks(message.content);
     if (fixedLinks.length > 0) {
         const tiktokShortLinks = fixedLinks.filter(link => link.kind === 'tiktokShortened')
                                            .map(link => link.origin);
         if (tiktokShortLinks.length > 0) {
-            resolveTikTokShortLinks(tiktokShortLinks).then(redirects => {
-                const finalLinks = [];
-                for (const link of fixedLinks) {
-                    const redirect = redirects[link.origin];
-                    if (redirect != null) {
-                        if (redirect === 'https://www.tiktok.com/') {
-                            console.log(`Link expired: ${link.origin}`);
-                            // Link has expired
-                            continue;
-                        }
-                        const url = new URL(redirect);
-                        url.host = url.host.replace(/\btiktok\.com$/, 'vxtiktok.com');
-                        url.search = '';
-                        link.replace = url.toString();
+            const redirects = await resolveTikTokShortLinks(tiktokShortLinks);
+            const finalLinks: Array<FixedLink> = [];
+            for (const link of fixedLinks) {
+                const redirect = redirects[link.origin];
+                if (redirect) {
+                    if (redirect === 'https://www.tiktok.com/') {
+                        console.log(`Link expired: ${link.origin}`);
+                        // Link has expired
+                        continue;
                     }
-                    finalLinks.push(link);
+                    const url = new URL(redirect);
+                    url.host = url.host.replace(/\btiktok\.com$/, 'vxtiktok.com');
+                    url.search = '';
+                    link.replace = url.toString();
                 }
-                reply(message, finalLinks);
-            });
+                finalLinks.push(link);
+            }
+            await reply(message, finalLinks);
         } else {
-            reply(message, fixedLinks);
+            await reply(message, fixedLinks);
         }
     }
 });
@@ -165,13 +166,12 @@ async function resolveTikTokShortLink(url: string): Promise<ResolvedLink> {
     });
 }
 
-function resolveTikTokShortLinks(urls: string[]): Promise<{ [origin: string]: string | undefined }> {
-    return Promise.all(urls.map(resolveTikTokShortLink)).then(redirects =>
-        redirects.reduce((map: { [origin: string]: string | undefined }, curr) => {
-            map[curr.origin] = curr.redirect;
-            return map;
-        }, {})
-    );
+async function resolveTikTokShortLinks(urls: string[]): Promise<Record<string, string | undefined>> {
+    const redirects = await Promise.all(urls.map(resolveTikTokShortLink));
+    return redirects.reduce((map: Record<string, string | undefined>, curr) => {
+        map[curr.origin] = curr.redirect;
+        return map;
+    }, {})
 }
 
 async function settings(interaction: ChatInputCommandInteraction) {
