@@ -1,8 +1,15 @@
-import { Client, GatewayIntentBits, Events, Message } from 'discord.js';
+import type { ChatInputCommandInteraction, Message } from 'discord.js';
+import { Client, GatewayIntentBits, Events } from 'discord.js';
 import * as https from 'https';
-const Database = require('better-sqlite3');
+import {
+    createConfigForGuild,
+    getConfigForGuild,
+    getSettings,
+    resetConfigForGuild,
+    updateConfigForGuild
+} from './db';
 
-const { token } = require('../.config.json');
+import { token } from './config';
 const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
@@ -10,7 +17,6 @@ const client = new Client({
         GatewayIntentBits.MessageContent,
     ],
 });
-const db = new Database('/home/glenmerlin/link-fixer/db.sqlite');
 
 client.login(token);
 
@@ -20,11 +26,9 @@ client.once('ready', client => {
 });
 
 client.on(Events.GuildCreate, guild => {
-    const existCheck = db.prepare(`SELECT * FROM config WHERE guild_id = ?`)
-    const data = existCheck.get(guild.id)
+    const data = getConfigForGuild(guild);
     if (!data) {
-        const insert = db.prepare(`INSERT INTO config (guild_id, embed, delMsg) VALUES(?, ?, ?)`);
-        insert.run(guild.id, 1, 0);
+        createConfigForGuild(guild, true, false);
     }
 })
 
@@ -69,13 +73,19 @@ client.on('messageCreate', message => {
     }
 });
 
-async function reply(message: Message<boolean>, links: FixedLink[]) {
+async function reply(message: Message, links: FixedLink[]) {
     console.log('Replacing:');
     for (const link of links) {
         console.log(`- ${link.origin} => ${link.replace}`);
     }
     const reply = links.map(link => link.replace).join('\n');
-    const settings = await getSettings(message);
+
+    if (!message.inGuild()) return;
+    const settings = getSettings(message);
+    if (!settings) {
+        console.warn(`No settings found for guild ${message.guildId}`);
+        return;
+    }
     if (settings.embed){
         await message.suppressEmbeds(true)
         await message.reply(reply);
@@ -108,12 +118,12 @@ const linkRe = new RegExp(linkPattern, 'gi');
 
 function fixLinks(message: string): FixedLink[] {
     const matches = [...message.matchAll(linkRe)];
-    const fixedLinks = [];
+    const fixedLinks: Array<FixedLink> = [];
     if (matches.length > 0) {
         for (const match of matches) {
             const origin = match[0];
             let kind: LinkKind;
-            let replace;
+            let replace: string;
             if (match[2] != null) {
                 kind = 'twitter';
                 replace = `https://${match[1] || ''}fxtwitter.com/${match[2]}`;
@@ -144,8 +154,8 @@ interface ResolvedLink {
     redirect?: string;
 }
 
-function resolveTikTokShortLink(url: string): Promise<ResolvedLink> {
-    return new Promise((resolve, reject) => {
+async function resolveTikTokShortLink(url: string): Promise<ResolvedLink> {
+    return await new Promise((resolve, reject) => {
         https.get(url, resp => {
             resolve({ origin: url, redirect: resp.headers.location });
         }).on('error', err => {
@@ -164,39 +174,41 @@ function resolveTikTokShortLinks(urls: string[]): Promise<{ [origin: string]: st
     );
 }
 
-const settings = async <T extends { reply(arg0: string): unknown; guildId: string, options: { _hoistedOptions: { value: unknown }[] } }>(interaction: T) => {
-    const embed = interaction.options._hoistedOptions[0].value ? 1:0, delMsg = interaction.options._hoistedOptions[1].value ? 1:0;
+async function settings(interaction: ChatInputCommandInteraction) {
+    if (!interaction.guild) {
+        interaction.reply("We're not in a server! Settings only apply in a server.");
+        return;
+    }
 
-    const existCheck = db.prepare(`SELECT * FROM config WHERE guild_id = ?`);
-    let data = await existCheck.get(interaction.guildId)
+    const embed = interaction.options.getBoolean("embed", true);
+    const delMsg = interaction.options.getBoolean("delete", true);
+
+    let data = getConfigForGuild(interaction.guild);
 
     if (data){
-        const update = db.prepare(`UPDATE config SET embed = ?, delMsg = ? WHERE guild_id = ?`)
-        update.run(embed, delMsg, interaction.guildId)
+        updateConfigForGuild(interaction.guild, embed, delMsg);
     }
     else {
-        const insert = db.prepare(`INSERT INTO config (guild_id, embed, delMsg) VALUES(?, ?, ?)`);
-        insert.run(interaction.guildId, embed, delMsg);
+        createConfigForGuild(interaction.guild, embed, delMsg);
     }
-    data = await existCheck.get(interaction.guildId);
-    interaction.reply(`Your settings have been set!\n- Embed Removal: ${Boolean(data.embed)}\n- Original Message Deletion: ${Boolean(data.delMsg)}`);
+
+    // Load config again to show user what got saved
+    data = getConfigForGuild(interaction.guild);
+
+    interaction.reply(`Your settings have been set!\n- Embed Removal: ${Boolean(data?.embed)}\n- Original Message Deletion: ${Boolean(data?.delMsg)}`);
 }
 
-const reset = async <T extends { reply(arg0: string): unknown; guildId: string }>(interaction: T) => {
-    const existCheck = db.prepare(`SELECT * FROM config WHERE guild_id= ?`);
-    const data = await existCheck.get(interaction.guildId)
+async function reset(interaction: ChatInputCommandInteraction) {
+    if (!interaction.guild) {
+        interaction.reply("We're not in a server. There are no settings to reset!");
+        return;
+    }
+    const data = getConfigForGuild(interaction.guild);
     if (data) {
-        const update = db.prepare(`UPDATE config SET embed = 1, delMsg = 0 WHERE guild_id = ?`);
-        update.run(interaction.guildId)
-        interaction.reply(`Your settings have been reset!\n- Embed Removal: True\n- Original Message Deletion: False`);
+        resetConfigForGuild(interaction.guild)
+        interaction.reply(`Your settings have been reset!\n- Embed Removal: true\n- Original Message Deletion: talse`);
     }
     else {
         interaction.reply(`You don't seem to have any settings set. This is a problem. Please contact @glenmerlin`)
     }
 };
-
-async function getSettings(message: Message<boolean>) {
-    const query = db.prepare(`SELECT * FROM config WHERE guild_id = ?`);
-    const data = await query.get(message.guildId);
-    return data;
-}
