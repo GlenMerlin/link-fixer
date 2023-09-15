@@ -5,8 +5,8 @@ const config = require('../.config.json') as unknown;
 
 // Define the config's expected shape
 const configSchema = type({
-  clientID: nonempty(string()),
-  token: nonempty(string())
+    clientID: nonempty(string()),
+    token: nonempty(string())
 });
 
 // Fail early if config is malformed
