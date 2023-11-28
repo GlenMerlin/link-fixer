@@ -114,7 +114,7 @@ const linkPattern = [
     r`https://(www\.)?tiktok\.com/(@[a-zA-Z0-9_.]*[a-zA-Z0-9_]/video/[0-9]+)`, // Captures 5 and 6
     r`https://(www\.)?tiktok\.com/(t/[a-zA-Z0-9]{9})`, // Captures 7 and 8
     r`https://(www\.)?x\.com/([a-zA-Z0-9_]{1,15}/status/[0-9]+)`, // Captures 9 and 10
-    r`https://(www\.|old\.)?reddit\.com/r/([a-zA-Z0-9_]{1,25}/[a-zA-Z0-9_]+)` // Captures 11 and 12
+    r`https://(www\.|old\.)?reddit\.com/r/([a-zA-Z0-9_]{1,25}/(?:comments|s)/[a-zA-Z0-9_]{1,25})` // Captures 11 and 12
 ].join('|');
 const linkRe = new RegExp(linkPattern, 'gi');
 
