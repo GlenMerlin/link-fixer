@@ -97,7 +97,7 @@ async function reply(message: Message, links: FixedLink[]) {
     }
 }
 
-type LinkKind = 'twitter' | 'instagram' | 'tiktok' | 'tiktokShortened' | 'x.com' | 'reddit';
+type LinkKind = 'twitter' | 'instagram' | 'tiktok' | 'tiktokShortened' | 'x.com' | 'reddit' | 'furaffinity';
 interface FixedLink {
     kind: LinkKind;
     origin: string;
@@ -114,7 +114,8 @@ const linkPattern = [
     r`(?<!<|\|)https://(www\.)?tiktok\.com/(@[a-zA-Z0-9_.]*[a-zA-Z0-9_]/video/[0-9]+)`, // Captures 5 and 6
     r`(?<!<|\|)https://(www\.)?tiktok\.com/(t/[a-zA-Z0-9]{9})`, // Captures 7 and 8
     r`(?<!<|\|)https://(www\.)?x\.com/([a-zA-Z0-9_]{1,15}/status/[0-9]+)`, // Captures 9 and 10
-    r`(?<!<|\|)https://(www\.|old\.)?reddit\.com/r/([a-zA-Z0-9_]{1,25}/(?:comments|s)/[a-zA-Z0-9_]{1,25})` // Captures 11 and 12
+    r`(?<!<|\|)https://(www\.|old\.)?reddit\.com/r/([a-zA-Z0-9_]{1,25}/(?:comments|s)/[a-zA-Z0-9_]{1,25})`, // Captures 11 and 12
+    r`(?<!<|\|)https://(www\.)?furaffinity\.net/view/([0-9]+)` // Captures 13 and 14
 ].join('|');
 const linkRe = new RegExp(linkPattern, 'gi');
 
@@ -143,8 +144,12 @@ function fixLinks(message: string): FixedLink[] {
                 replace = `https://${match[9] || ''}fxtwitter.com/${match[10]}`;
             } else if (match[12] != null){
                 kind = 'reddit';
-                replace = `https://${match[11] || ''}rxddit.com/r/${match[12]}`
-            } else {
+                replace = `https://${match[11] || ''}rxddit.com/r/${match[12]}`;
+            } else if (match[14] != null){
+                kind = 'furaffinity';
+                replace = `https://${match[13] || ''}vxfuraffinity.net/view/${match[14]}`;
+            }
+            else {
                 console.error(`No pattern matched! ${JSON.stringify(message)}`);
                 continue;
             }
