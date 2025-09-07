@@ -30,7 +30,7 @@ function configFromRaw(raw: typeof rawGuildConfigSchema.TYPE): GuildConfig {
     }
 }
 
-const db = new Database('/home/glenmerlin/link-fixer/db.sqlite');
+const db = new Database('../db.sqlite');
 
 export function createConfigForGuild(guild: Guild, embed: boolean, delMsg: boolean): void {
     const insert = db.prepare<[string, NumberBool, NumberBool]>(`INSERT INTO config (guild_id, embed, delMsg) VALUES(?, ?, ?)`);
