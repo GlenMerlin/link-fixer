@@ -20,7 +20,7 @@ const client = new Client({
 
 client.login(token);
 
-client.once('ready', client => {
+client.once('clientReady', client => {
     console.log('Started up successfully');
     client.user.setActivity('Fixing all the links!');
 });
@@ -61,7 +61,7 @@ client.on('messageCreate', async message => {
                         continue;
                     }
                     const url = new URL(redirect);
-                    url.host = url.host.replace(/\btiktok\.com$/, 'vxtiktok.com');
+                    url.host = url.host.replace(/\btiktok\.com$/, 'tnktok.com');
                     url.search = '';
                     link.replace = url.toString();
                 }
@@ -111,8 +111,8 @@ const r = String.raw;
 const linkPattern = [
     r`(?<!<|\|)https://(www\.)?twitter\.com/([a-zA-Z0-9_]{1,15}/status/[0-9]+)`, // Captures 1 and 2
     r`(?<!<|\|)https://(www\.)?instagram\.com/((?:p|reel)/[a-zA-Z0-9_\-]+)`, // Captures 3 and 4
-    r`(?<!<|\|)https://(www\.)?tiktok\.com/(@[a-zA-Z0-9_.]*[a-zA-Z0-9_]/video/[0-9]+)`, // Captures 5 and 6
-    r`(?<!<|\|)https://(www\.)?tiktok\.com/(t/[a-zA-Z0-9]{9})`, // Captures 7 and 8
+    r`(?<!<|\|)https://(www\.)?tiktok\.com/(@[a-zA-Z0-9_.\-]*[a-zA-Z0-9_\-]/video/[0-9]+)`, // Captures 5 and 6
+    r`(?<!<|\|)https://(www\.)?tiktok\.com/(t/[a-zA-Z0-9_\-]{9})`, // Captures 7 and 8
     r`(?<!<|\|)https://(www\.)?x\.com/([a-zA-Z0-9_]{1,15}/status/[0-9]+)`, // Captures 9 and 10
     r`(?<!<|\|)https://(www\.|old\.)?reddit\.com/r/([a-zA-Z0-9_]{1,25}/(?:comments|s)/[a-zA-Z0-9_]{1,25})`, // Captures 11 and 12
     r`(?<!<|\|)https://(www\.)?furaffinity\.net/view/([0-9]+)` // Captures 13 and 14
@@ -135,10 +135,10 @@ function fixLinks(message: string): FixedLink[] {
                 replace = `https://${match[3] || ''}ddinstagram.com/${match[4]}`;
             } else if (match[6] != null) {
                 kind = 'tiktok';
-                replace = `https://${match[5] || ''}vxtiktok.com/${match[6]}`;
+                replace = `https://${match[5] || ''}tnktok.com/${match[6]}`;
             } else if (match[8] != null) {
                 kind = 'tiktokShortened';
-                replace = `https://${match[7] || ''}vxtiktok.com/${match[8]}`;
+                replace = `https://${match[7] || ''}tnktok.com/${match[8]}`;
             } else if (match[10] != null){
                 kind = 'x.com';
                 replace = `https://${match[9] || ''}fxtwitter.com/${match[10]}`;
