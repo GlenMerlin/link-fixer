@@ -132,7 +132,7 @@ function fixLinks(message: string): FixedLink[] {
                 replace = `https://${match[1] || ''}fxtwitter.com/${match[2]}`;
             } else if (match[4] != null) {
                 kind = 'instagram';
-                replace = `https://${match[3] || ''}ddinstagram.com/${match[4]}`;
+                replace = `https://${match[3] || ''}eeinstagram.com/${match[4]}`;
             } else if (match[6] != null) {
                 kind = 'tiktok';
                 replace = `https://${match[5] || ''}tnktok.com/${match[6]}`;
