@@ -144,7 +144,7 @@ function fixLinks(message: string): FixedLink[] {
                 replace = `https://${match[9] || ''}fxtwitter.com/${match[10]}`;
             } else if (match[12] != null){
                 kind = 'reddit';
-                replace = `https://${match[11] || ''}rxddit.com/r/${match[12]}`;
+                replace = `https://${match[11] || ''}vxreddit.com/r/${match[12]}`;
             } else if (match[14] != null){
                 kind = 'furaffinity';
                 replace = `https://${match[13] || ''}vxfuraffinity.net/view/${match[14]}`;
