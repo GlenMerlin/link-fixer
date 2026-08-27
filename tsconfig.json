@@ -1,17 +1,16 @@
 {
 	"compilerOptions": {
 		"strict": true,
-		"module": "commonjs",
+		"module": "nodenext",
 		"target": "ES2020",
 		"lib": [
 			"ESNext"
 		],
-		"moduleResolution": "node",
+		"moduleResolution": "nodenext",
 		"rootDir": "./src",
 		"outDir": "./build",
 		"newLine": "lf",
 		"sourceMap": false,
-		"baseUrl": ".",
 		"removeComments": true,
 		"esModuleInterop": true,
 		"allowSyntheticDefaultImports": true,
